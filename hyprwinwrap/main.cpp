@@ -138,14 +138,12 @@ void wrapWindow(PHLWINDOW pWindow) {
     const Vector2D newSize = {static_cast<double>(monitorSize.x * (sx / 100.f)), static_cast<double>(monitorSize.y * (sy / 100.f))};
     const Vector2D newPos = {static_cast<double>(monitorPos.x + (monitorSize.x * (px / 100.f))), static_cast<double>(monitorPos.y + (monitorSize.y * (py / 100.f)))};
 
-    const CBox b(newPos.x, newPos.y, newSize.x, newSize.y);
-
-    pWindow->layoutTarget()->space()->setTargetGeom(b, pWindow->layoutTarget());
     pWindow->m_realSize->setValueAndWarp(newSize);
     pWindow->m_realPosition->setValueAndWarp(newPos);
     pWindow->m_size     = newSize;
     pWindow->m_position = newPos;
     pWindow->m_pinned   = true;
+    pWindow->updateWindowData();
     pWindow->sendWindowSize(true);
 
     bgWindows.push_back({pWindow, originalState});
@@ -170,12 +168,11 @@ void unwrapWindow(PHLWINDOW pWindow) {
         g_layoutManager->changeFloatingMode(pWindow->layoutTarget());
 
     if (originalState.isFloating) {
-        const CBox b(originalState.position.x, originalState.position.y, originalState.size.x, originalState.size.y);
-        pWindow->layoutTarget()->space()->setTargetGeom(b, pWindow->layoutTarget());
         pWindow->m_realSize->setValueAndWarp(originalState.size);
         pWindow->m_realPosition->setValueAndWarp(originalState.position);
         pWindow->m_size     = originalState.size;
         pWindow->m_position = originalState.position;
+        pWindow->updateWindowData();
         pWindow->sendWindowSize(true);
     }
 
