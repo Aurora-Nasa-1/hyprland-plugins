@@ -138,6 +138,9 @@ void wrapWindow(PHLWINDOW pWindow) {
     const Vector2D newSize = {static_cast<double>(monitorSize.x * (sx / 100.f)), static_cast<double>(monitorSize.y * (sy / 100.f))};
     const Vector2D newPos = {static_cast<double>(monitorPos.x + (monitorSize.x * (px / 100.f))), static_cast<double>(monitorPos.y + (monitorSize.y * (py / 100.f)))};
 
+    const CBox b(newPos.x, newPos.y, newSize.x, newSize.y);
+
+    pWindow->layoutTarget()->space()->setTargetGeom(b, pWindow->layoutTarget());
     pWindow->m_realSize->setValueAndWarp(newSize);
     pWindow->m_realPosition->setValueAndWarp(newPos);
     pWindow->m_size     = newSize;
