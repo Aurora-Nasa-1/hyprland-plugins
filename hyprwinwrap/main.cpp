@@ -69,9 +69,21 @@ static void clearWindowRules() {
     bgRules.clear();
 }
 
+void unwrapWindow(PHLWINDOW pWindow);
+
 void wrapWindow(PHLWINDOW pWindow) {
     if (std::find_if(bgWindows.begin(), bgWindows.end(), [pWindow](const auto& data) { return data.window.lock() == pWindow; }) != bgWindows.end())
         return; // already wrapped
+
+    // Enforce max 1 background window
+    while (!bgWindows.empty()) {
+        auto oldWin = bgWindows.front().window.lock();
+        if (oldWin) {
+            unwrapWindow(oldWin);
+        } else {
+            bgWindows.erase(bgWindows.begin());
+        }
+    }
 
     const auto PMONITOR = pWindow->m_monitor.lock();
     if (!PMONITOR)
@@ -172,6 +184,16 @@ void unwrapWindow(PHLWINDOW pWindow) {
 }
 
 void toggleWindow(std::string args) {
+    if (!bgWindows.empty()) {
+        auto oldWin = bgWindows.front().window.lock();
+        if (oldWin) {
+            unwrapWindow(oldWin);
+        } else {
+            bgWindows.erase(bgWindows.begin());
+        }
+        return;
+    }
+
     PHLWINDOW pWindow = nullptr;
     for (auto& w : g_pCompositor->m_windows) {
         if (g_pCompositor->isWindowActive(w)) {
@@ -180,13 +202,7 @@ void toggleWindow(std::string args) {
         }
     }
     
-    if (!pWindow) return;
-
-    bool isWrapped = std::find_if(bgWindows.begin(), bgWindows.end(), [pWindow](const auto& data) { return data.window.lock() == pWindow; }) != bgWindows.end();
-
-    if (isWrapped) {
-        unwrapWindow(pWindow);
-    } else {
+    if (pWindow) {
         wrapWindow(pWindow);
     }
 }
